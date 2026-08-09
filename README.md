@@ -36,9 +36,7 @@ Plain HTML/CSS/JS + [Chart.js](https://www.chartjs.org/), no framework, no build
 
 ---
 
-### 🚀 How to deploy
-
-**1. One-time setup**
+### 🛠️ One-time setup
 
 ```bash
 npm install
@@ -46,15 +44,25 @@ cp .env.example .env
 # then fill in TUMBLR_API_KEY in .env
 ```
 
-**2. Refresh the data** (run this whenever you want newer posts/comments on the dashboard)
+### 🔄 Updating the data
+
+The dashboard reads from a static `public/posts.json` snapshot, not a live API call, so new episodes and comments won't show up until you regenerate it:
 
 ```bash
 npm run fetch-posts
 ```
 
-This pulls every post from the blog, keeps only reply-note data for the commenters leaderboard (no like/reblog data — no need to publish that many strangers' avatars), and writes it to `public/posts.json`.
+This pulls every post from the blog, keeps only reply-note data for the commenters leaderboard (no like/reblog data — no need to publish that many strangers' avatars), and overwrites `public/posts.json`. Run it whenever you want the dashboard caught up, then deploy (below) to publish the refresh.
 
-**3. Deploy to GitHub Pages**
+### 💻 Local development
+
+```bash
+npm run start
+```
+
+Serves `public/` with [`live-server`](https://www.npmjs.com/package/live-server), opens it in your browser, and reloads on save — use this instead of round-tripping through GitHub Pages while you're editing.
+
+### 🚀 Deploy to GitHub Pages
 
 ```bash
 npm run deploy
