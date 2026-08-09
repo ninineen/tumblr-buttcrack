@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Posting-habits dashboard for a Tumblr blog, pulled live from the Tumblr API",
-  "main": "server.js",
+  "main": "fetch-posts.js",
   "scripts": {
-    "start": "node server.js"
+    "fetch-posts": "node fetch-posts.js",
+    "deploy": "gh-pages -d public"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
   }
 }

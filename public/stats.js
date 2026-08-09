@@ -5,6 +5,7 @@ export const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS_PER_DAY = 24;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 const TOP_POSTS_LIMIT = 10;
+const TOP_COMMENTERS_LIMIT = 10;
 
 function toPostDate(post) {
   return new Date(post.timestamp * 1000);
@@ -57,10 +58,36 @@ function sumNoteCountByCalendarDate(posts) {
   return noteTotalsByDate;
 }
 
+function toNoteCountEntry(post) {
+  return { slug: post.slug, noteCount: post.note_count || 0, postUrl: post.post_url };
+}
+
 function findTopPostsByNoteCount(posts, limit = TOP_POSTS_LIMIT) {
-  return posts
-    .map(post => ({ slug: post.slug, noteCount: post.note_count || 0, postUrl: post.post_url }))
-    .sort((a, b) => b.noteCount - a.noteCount)
+  return posts.map(toNoteCountEntry).sort((a, b) => b.noteCount - a.noteCount).slice(0, limit);
+}
+
+function findBottomPostsByNoteCount(posts, limit = TOP_POSTS_LIMIT) {
+  return posts.map(toNoteCountEntry).sort((a, b) => a.noteCount - b.noteCount).slice(0, limit);
+}
+
+function findTopCommenters(posts, limit = TOP_COMMENTERS_LIMIT) {
+  const commenterStatsByBlogName = {};
+  posts.forEach(post => {
+    (post.replies || []).forEach(reply => {
+      const existing = commenterStatsByBlogName[reply.blog_name];
+      const isNewestSoFar = !existing || reply.timestamp > existing.latestTimestamp;
+
+      commenterStatsByBlogName[reply.blog_name] = {
+        commentCount: (existing ? existing.commentCount : 0) + 1,
+        avatarUrl: isNewestSoFar ? reply.avatar_url : existing.avatarUrl,
+        latestTimestamp: isNewestSoFar ? reply.timestamp : existing.latestTimestamp,
+      };
+    });
+  });
+
+  return Object.entries(commenterStatsByBlogName)
+    .map(([blogName, { commentCount, avatarUrl }]) => ({ blogName, commentCount, avatarUrl }))
+    .sort((a, b) => b.commentCount - a.commentCount)
     .slice(0, limit);
 }
 
@@ -109,6 +136,8 @@ export function buildDashboardStats(posts) {
     noteCountByCalendarDate: sumNoteCountByCalendarDate(posts),
     postCountsByCharacter: countPostsByCharacter(posts),
     topPostsByNoteCount: findTopPostsByNoteCount(posts),
+    bottomPostsByNoteCount: findBottomPostsByNoteCount(posts),
+    topCommenters: findTopCommenters(posts),
     longestPostingStreakInDays: calculateLongestPostingStreak(postsByCalendarDate),
   };
 }

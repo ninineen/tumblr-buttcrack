@@ -167,21 +167,20 @@ function renderCharacterChart(stats) {
   });
 }
 
-function renderTopPostsChart(stats) {
-  const elementId = 'topPostsChart';
+function renderNotedPostsChart(elementId, posts, colorVar) {
   destroyExistingChart(elementId);
 
-  // Reversed so the highest-note post ends up at the top of the horizontal bar.
-  const postsLowestNotesFirst = [...stats.topPostsByNoteCount].reverse();
-  const postUrlsByBarIndex = postsLowestNotesFirst.map(post => post.postUrl);
+  // Reversed so the post nearest the top of the ranking ends up at the top of the horizontal bar.
+  const postsBarOrder = [...posts].reverse();
+  const postUrlsByBarIndex = postsBarOrder.map(post => post.postUrl);
 
   chartInstancesByElementId[elementId] = new Chart(document.getElementById(elementId), {
     type: 'bar',
     data: {
-      labels: postsLowestNotesFirst.map(post => abbreviateEpisodeSlug(post.slug)),
+      labels: postsBarOrder.map(post => abbreviateEpisodeSlug(post.slug)),
       datasets: [{
-        data: postsLowestNotesFirst.map(post => post.noteCount),
-        backgroundColor: readThemeColor('--series-magenta'),
+        data: postsBarOrder.map(post => post.noteCount),
+        backgroundColor: readThemeColor(colorVar),
         borderRadius: BAR_CORNER_RADIUS,
         maxBarThickness: TOP_POSTS_BAR_THICKNESS,
       }],
@@ -215,5 +214,6 @@ export function renderDashboardCharts(stats) {
   renderPostsByHourChart(stats);
   renderCharacterChart(stats);
   renderNotesPerDayChart(stats);
-  renderTopPostsChart(stats);
+  renderNotedPostsChart('topPostsChart', stats.topPostsByNoteCount, '--series-magenta');
+  renderNotedPostsChart('bottomPostsChart', stats.bottomPostsByNoteCount, '--series-yellow');
 }

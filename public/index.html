@@ -68,10 +68,22 @@
       <p class="chart-note">Click a bar to open that post on Tumblr.</p>
     </section>
 
+    <section class="chart-card">
+      <h2>Least-noted posts</h2>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="bottomPostsChart" role="img" aria-label="Horizontal bar chart of the ten posts with the fewest notes"></canvas></div>
+      <p class="chart-note">Click a bar to open that post on Tumblr.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Top 10 Commenters</h2>
+      <ol id="commenters-leaderboard" class="leaderboard-list"></ol>
+      <p class="chart-note">Counted from reply notes only, not likes or reblogs. Click a row to open that blog on Tumblr.</p>
+    </section>
+
   </main>
 
   <footer class="page-footer">
-    <p>Built from <span id="footer-count">158</span> posts pulled live from the Tumblr API. New posts show up automatically, the server refreshes its cache every five minutes.</p>
+    <p>Built from <span id="footer-count">158</span> posts pulled from the Tumblr API. Data is a static snapshot, refreshed manually.</p>
   </footer>
 
 </div>
