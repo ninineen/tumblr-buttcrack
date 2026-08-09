@@ -14,18 +14,6 @@ It reads amateur at first glance — messy art, typos, brainrot text. It is not.
 
 On August 5th I streamed building a conspiracy board for it — seven open mysteries, a character relationship map, a timeline reconciling Harry's POV, Kim's POV, and OP's flashback-within-a-flashback nonsense (episodes 90–100 nearly got us). Some friends from the Discord jumped in. **The Buttcrack Union** was born: a Miro board, a group chat, and now this — a dashboard to track *how* they're posting, so we can obsess over the *when* as well as the *what*.
 
-**Open mysteries, current status:**
-- Who is Titus seeing? — ✅ SOLVED
-- Did Titus and Kim actually fuck
-- Did Harry lie about sleeping with Everard?
-- What were the stains in the car — ice cream, or something else?
-- Why did Kim shave his cute stache
-- What was the 38 tally in Kim's notebook?
-- How did Harry afford the ring? Where is the ring now?
-- Who is Kim's new boss — is it Sans from Undertale?
-- Did buttcrack steal NiniNeen's manuscript?!
-
-**Union members:** NiniNeen (union leader), freaknix, nekronyancer, patopq, [@marrok-dark-knight](https://www.tumblr.com/marrok-dark-knight)
 
 ---
 
