@@ -4,6 +4,8 @@
 
 <p align="center"><i>a data-viz built out of love and admiration for <a href="https://www.tumblr.com/harryduboisesleftbuttcrack">@harryduboisesleftbuttcrack</a></i></p>
 
+<p align="center"><a href="https://ninineen.github.io/tumblr-buttcrack/"><b>🔗 live dashboard</b></a></p>
+
 ---
 
 ### 🎭 Context and effort
@@ -58,7 +60,7 @@ This pulls every post from the blog, keeps only reply-note data for the commente
 npm run deploy
 ```
 
-This pushes `public/` to the `gh-pages` branch via [`gh-pages`](https://www.npmjs.com/package/gh-pages). One-time repo setting: **Settings → Pages → Source: Deploy from a branch → `gh-pages` / root**.
+This pushes `public/` to the `gh-pages` branch via [`gh-pages`](https://www.npmjs.com/package/gh-pages). Repo Pages settings are already pointed at that branch — no config needed, just run this whenever the data or the site changes.
 
 ---
 
