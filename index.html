@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Posting habits: harryduboisesleftbuttcrack</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="viz-root">
+
+  <header class="page-header">
+    <div>
+      <h1>Posting habits</h1>
+      <p class="subtitle">A look at <a href="https://www.tumblr.com/harryduboisesleftbuttcrack" target="_blank" rel="noopener">harryduboisesleftbuttcrack</a>'s posting history</p>
+    </div>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" type="button">
+      <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+    </button>
+  </header>
+
+  <section class="stat-row" id="stat-row" aria-live="polite">
+    <div class="stat-tile"><p class="stat-label">Posts</p><p class="stat-value" id="stat-total">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Date range</p><p class="stat-value stat-value--sm" id="stat-range">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Biggest day</p><p class="stat-value stat-value--sm" id="stat-bigday">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Peak hour (UTC)</p><p class="stat-value stat-value--sm" id="stat-peakhour">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Longest streak</p><p class="stat-value stat-value--sm" id="stat-streak">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Days since last post</p><p class="stat-value stat-value--sm" id="stat-days-since">–</p></div>
+  </section>
+
+  <main>
+
+    <section class="chart-card">
+      <h2>Posts per day</h2>
+      <div class="chart-wrap chart-wrap--wide"><canvas id="perDayChart" role="img" aria-label="Bar chart of posts per calendar day across the archive"></canvas></div>
+      <p class="chart-note">The first three days were the blog's launch and already account for a big chunk of the total. Treat that early daily rate as a backlog dump, not a steady habit.</p>
+    </section>
+
+    <div class="chart-grid">
+      <section class="chart-card">
+        <h2>Posts by day of week</h2>
+        <div class="chart-wrap"><canvas id="dowChart" role="img" aria-label="Bar chart of posts by day of week"></canvas></div>
+        <p class="chart-note">Sunday and Monday lead by a wide margin, and not just because of the launch. A second cluster on Aug 2 and 3, also a Sunday into Monday, repeats the same shape. That's a real weekly pattern, not a one-off. Friday and Saturday stay the quietest all the way through.</p>
+      </section>
+
+      <section class="chart-card">
+        <h2>Posts by hour of day (UTC)</h2>
+        <div class="chart-wrap"><canvas id="hourChart" role="img" aria-label="Bar chart of posts by UTC hour"></canvas></div>
+        <p class="chart-note">A peak around 15:00 UTC shows up again and again, not just in one burst. It's the closest thing to a real daily posting window in this archive.</p>
+      </section>
+    </div>
+
+    <section class="chart-card">
+      <h2>Character tags</h2>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="charChart" role="img" aria-label="Horizontal bar chart of posts tagged with each character"></canvas></div>
+      <p class="chart-note">Counted directly from each post's tags, with spelling variants like "harry dubois" merged into one character. Harry and Kim anchor the comic. Everyone else is a supporting or guest slot.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Notes per day</h2>
+      <div class="chart-wrap chart-wrap--wide"><canvas id="engagementChart" role="img" aria-label="Bar chart of total notes received per calendar day"></canvas></div>
+      <p class="chart-note">Total notes on everything posted that day. This tracks post volume closely, so a busy day is usually also a high-notes day, worth watching for days that break that pattern.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Most-noted posts</h2>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="topPostsChart" role="img" aria-label="Horizontal bar chart of the ten posts with the most notes"></canvas></div>
+      <p class="chart-note">Click a bar to open that post on Tumblr.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Least-noted posts</h2>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="bottomPostsChart" role="img" aria-label="Horizontal bar chart of the ten posts with the fewest notes"></canvas></div>
+      <p class="chart-note">Click a bar to open that post on Tumblr.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Top 10 Commenters</h2>
+      <ol id="commenters-leaderboard" class="leaderboard-list"></ol>
+      <p class="chart-note">Counted from reply notes only, not likes or reblogs. Click a row to open that blog on Tumblr.</p>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    <p>Built from <span id="footer-count">158</span> posts pulled from the Tumblr API. Data is a static snapshot, refreshed manually.</p>
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
