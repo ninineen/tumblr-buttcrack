@@ -24,6 +24,8 @@
     <div class="stat-tile"><p class="stat-label">Date range</p><p class="stat-value stat-value--sm" id="stat-range">–</p></div>
     <div class="stat-tile"><p class="stat-label">Biggest day</p><p class="stat-value stat-value--sm" id="stat-bigday">–</p></div>
     <div class="stat-tile"><p class="stat-label">Peak hour (UTC)</p><p class="stat-value stat-value--sm" id="stat-peakhour">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Longest streak</p><p class="stat-value stat-value--sm" id="stat-streak">–</p></div>
+    <div class="stat-tile"><p class="stat-label">Days since last post</p><p class="stat-value stat-value--sm" id="stat-days-since">–</p></div>
   </section>
 
   <main>
@@ -54,15 +56,27 @@
       <p class="chart-note">Counted directly from each post's tags, with spelling variants like "harry dubois" merged into one character. Harry and Kim anchor the comic. Everyone else is a supporting or guest slot.</p>
     </section>
 
+    <section class="chart-card">
+      <h2>Notes per day</h2>
+      <div class="chart-wrap chart-wrap--wide"><canvas id="engagementChart" role="img" aria-label="Bar chart of total notes received per calendar day"></canvas></div>
+      <p class="chart-note">Total notes on everything posted that day. This tracks post volume closely, so a busy day is usually also a high-notes day, worth watching for days that break that pattern.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Most-noted posts</h2>
+      <div class="chart-wrap chart-wrap--tall"><canvas id="topPostsChart" role="img" aria-label="Horizontal bar chart of the ten posts with the most notes"></canvas></div>
+      <p class="chart-note">Click a bar to open that post on Tumblr.</p>
+    </section>
+
   </main>
 
   <footer class="page-footer">
-    <p>Built from <span id="footer-count">158</span> posts pulled via the Tumblr API. Drop a fresh <code>data/posts.json</code> in and reload to update everything on this page.</p>
+    <p>Built from <span id="footer-count">158</span> posts pulled live from the Tumblr API. New posts show up automatically, the server refreshes its cache every five minutes.</p>
   </footer>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
