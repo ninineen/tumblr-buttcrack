@@ -11,7 +11,7 @@ function toPostDate(post) {
   return new Date(post.timestamp * 1000);
 }
 
-function toCalendarDateKey(date) {
+export function toCalendarDateKey(date) {
   return date.toISOString().slice(0, 10);
 }
 
