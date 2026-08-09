@@ -1,6 +1,10 @@
-import { buildDashboardStats } from './stats.js';
+import { buildDashboardStats, toCalendarDateKey } from './stats.js';
 import { renderDashboardCharts } from './charts.js';
 import { initializeThemeToggle } from './theme.js';
+
+const CALENDAR_WEEKDAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+const CALENDAR_HEAT_LEVELS = 4;
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function formatShortDate(date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -103,10 +107,89 @@ function renderCommentersLeaderboard(topCommenters) {
   });
 }
 
+function toHeatLevel(count, maxCount) {
+  if (count === 0 || maxCount === 0) return 0;
+  return Math.min(CALENDAR_HEAT_LEVELS, Math.ceil((count / maxCount) * CALENDAR_HEAT_LEVELS));
+}
+
+function buildCalendarDayRange(dateRange) {
+  const firstOfStartMonth = new Date(Date.UTC(dateRange.earliest.getUTCFullYear(), dateRange.earliest.getUTCMonth(), 1));
+
+  // Align the grid to Sunday-based weeks, but everything before firstOfStartMonth is left unrendered
+  // (a partial leading week of the previous month, cropped rather than shown).
+  const startOfGrid = new Date(firstOfStartMonth);
+  startOfGrid.setUTCDate(startOfGrid.getUTCDate() - startOfGrid.getUTCDay());
+
+  const today = new Date();
+  const endOfRange = today > dateRange.latest ? today : dateRange.latest;
+  const endOfGrid = new Date(Date.UTC(endOfRange.getUTCFullYear(), endOfRange.getUTCMonth() + 1, 0));
+  const totalDays = Math.round((endOfGrid - startOfGrid) / MILLISECONDS_PER_DAY) + 1;
+
+  const days = Array.from({ length: totalDays }, (_, dayOffset) => {
+    const date = new Date(startOfGrid);
+    date.setUTCDate(date.getUTCDate() + dayOffset);
+    return date;
+  });
+
+  return days.filter(date => date >= firstOfStartMonth);
+}
+
+function renderPostingCalendar(postsByCalendarDate, dateRange) {
+  const gridElement = document.getElementById('posting-calendar');
+  gridElement.innerHTML = '';
+
+  const days = buildCalendarDayRange(dateRange);
+  const firstDayOfWeekIndex = days[0].getUTCDay();
+  const weekCount = Math.ceil((days.length + firstDayOfWeekIndex) / 7);
+  gridElement.style.gridTemplateColumns = `auto repeat(${weekCount}, 12px)`;
+  gridElement.style.gridTemplateRows = `14px repeat(7, 12px)`;
+
+  CALENDAR_WEEKDAY_LABELS.forEach((label, dayOfWeek) => {
+    const labelElement = document.createElement('span');
+    labelElement.className = 'calendar-heatmap-weekday';
+    labelElement.textContent = label;
+    labelElement.style.gridColumn = '1';
+    labelElement.style.gridRow = `${dayOfWeek + 2}`;
+    gridElement.appendChild(labelElement);
+  });
+
+  const maxCount = Math.max(...days.map(date => postsByCalendarDate[toCalendarDateKey(date)] || 0), 1);
+  const todayDateKey = toCalendarDateKey(new Date());
+  let previousMonth = null;
+
+  days.forEach((date, dayOffset) => {
+    const weekIndex = Math.floor((dayOffset + firstDayOfWeekIndex) / 7);
+    const dayOfWeek = date.getUTCDay();
+    const dateKey = toCalendarDateKey(date);
+    const count = postsByCalendarDate[dateKey] || 0;
+
+    const isFirstVisibleDay = dayOffset === 0;
+    if (date.getUTCMonth() !== previousMonth && (isFirstVisibleDay || dayOfWeek === 0)) {
+      previousMonth = date.getUTCMonth();
+      const monthElement = document.createElement('span');
+      monthElement.className = 'calendar-heatmap-month';
+      monthElement.textContent = date.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+      monthElement.style.gridColumn = `${weekIndex + 2}`;
+      monthElement.style.gridRow = '1';
+      gridElement.appendChild(monthElement);
+    }
+
+    const cellElement = document.createElement('span');
+    cellElement.className = 'calendar-heatmap-cell';
+    cellElement.dataset.level = toHeatLevel(count, maxCount);
+    cellElement.classList.toggle('calendar-heatmap-cell--today', dateKey === todayDateKey);
+    cellElement.style.gridColumn = `${weekIndex + 2}`;
+    cellElement.style.gridRow = `${dayOfWeek + 2}`;
+    cellElement.title = `${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })}: ${count} post${count === 1 ? '' : 's'}`;
+    gridElement.appendChild(cellElement);
+  });
+}
+
 function renderDashboard(stats) {
   renderStatTiles(stats);
   renderDashboardCharts(stats);
   renderCommentersLeaderboard(stats.topCommenters);
+  renderPostingCalendar(stats.postsByCalendarDate, stats.dateRange);
 }
 
 async function fetchAllPosts() {
