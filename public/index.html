@@ -88,6 +88,30 @@
       <p class="chart-note">Counted from reply notes only, not likes or reblogs. Click a row to open that blog on Tumblr.</p>
     </section>
 
+    <section class="chart-card">
+      <h2>Race to Comment</h2>
+      <ol id="race-to-comment-leaderboard" class="leaderboard-list"></ol>
+      <p class="chart-note">Same top 10 commenters, ranked by average time between a post going up and them replying to it. Fastest first.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Reply Length</h2>
+      <ol id="reply-length-leaderboard" class="leaderboard-list"></ol>
+      <p class="chart-note">Same top 10 commenters, ranked by average word count per reply. Wordiest first.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>Chaos Leaderboard 🌀</h2>
+      <ol id="chaos-leaderboard" class="leaderboard-list"></ol>
+      <p class="chart-note">Same top 10 commenters, scored on exclamation points, ALL CAPS words, and emoji per reply, then averaged. Most unhinged first.</p>
+    </section>
+
+    <section class="chart-card">
+      <h2>What the union is saying</h2>
+      <div id="reply-word-cloud" class="word-cloud" aria-label="Word cloud of the most common words across every comment"></div>
+      <p class="chart-note">Most common words across all <span id="word-cloud-reply-count">–</span> replies, single-use words filtered out.</p>
+    </section>
+
   </main>
 
   <footer class="page-footer">

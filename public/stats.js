@@ -70,24 +70,102 @@ function findBottomPostsByNoteCount(posts, limit = TOP_POSTS_LIMIT) {
   return posts.map(toNoteCountEntry).sort((a, b) => a.noteCount - b.noteCount).slice(0, limit);
 }
 
-function findTopCommenters(posts, limit = TOP_COMMENTERS_LIMIT) {
+function countReplyWords(replyText) {
+  const trimmed = (replyText || '').trim();
+  return trimmed === '' ? 0 : trimmed.split(/\s+/).length;
+}
+
+const EMOJI_PATTERN = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/gu;
+const ALL_CAPS_WORD_PATTERN = /\b[A-Z]{2,}\b/g;
+
+function scoreReplyChaos(replyText) {
+  const text = replyText || '';
+  const exclamationCount = (text.match(/!/g) || []).length;
+  const capsWordCount = (text.match(ALL_CAPS_WORD_PATTERN) || []).length;
+  const emojiCount = (text.match(EMOJI_PATTERN) || []).length;
+  return exclamationCount + capsWordCount + emojiCount;
+}
+
+function buildCommenterStatsByBlogName(posts) {
   const commenterStatsByBlogName = {};
   posts.forEach(post => {
     (post.replies || []).forEach(reply => {
       const existing = commenterStatsByBlogName[reply.blog_name];
       const isNewestSoFar = !existing || reply.timestamp > existing.latestTimestamp;
+      const responseMinutes = Math.max(0, (reply.timestamp - post.timestamp) / 60);
 
       commenterStatsByBlogName[reply.blog_name] = {
         commentCount: (existing ? existing.commentCount : 0) + 1,
+        totalResponseMinutes: (existing ? existing.totalResponseMinutes : 0) + responseMinutes,
+        totalWordCount: (existing ? existing.totalWordCount : 0) + countReplyWords(reply.reply_text),
+        totalChaosScore: (existing ? existing.totalChaosScore : 0) + scoreReplyChaos(reply.reply_text),
         avatarUrl: isNewestSoFar ? reply.avatar_url : existing.avatarUrl,
         latestTimestamp: isNewestSoFar ? reply.timestamp : existing.latestTimestamp,
       };
     });
   });
+  return commenterStatsByBlogName;
+}
 
+function findTopCommenters(commenterStatsByBlogName, limit = TOP_COMMENTERS_LIMIT) {
   return Object.entries(commenterStatsByBlogName)
-    .map(([blogName, { commentCount, avatarUrl }]) => ({ blogName, commentCount, avatarUrl }))
+    .map(([blogName, { commentCount, totalResponseMinutes, totalWordCount, totalChaosScore, avatarUrl }]) => ({
+      blogName,
+      commentCount,
+      avatarUrl,
+      averageResponseMinutes: totalResponseMinutes / commentCount,
+      averageWordCount: totalWordCount / commentCount,
+      averageChaosScore: totalChaosScore / commentCount,
+    }))
     .sort((a, b) => b.commentCount - a.commentCount)
+    .slice(0, limit);
+}
+
+function findRaceToComment(topCommenters) {
+  return [...topCommenters].sort((a, b) => a.averageResponseMinutes - b.averageResponseMinutes);
+}
+
+function findReplyLengthLeaderboard(topCommenters) {
+  return [...topCommenters].sort((a, b) => b.averageWordCount - a.averageWordCount);
+}
+
+function findChaosLeaderboard(topCommenters) {
+  return [...topCommenters].sort((a, b) => b.averageChaosScore - a.averageChaosScore);
+}
+
+const REPLY_TEXT_STOPWORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'to', 'of', 'in', 'on', 'at', 'for', 'with', 'about', 'as', 'by', 'from', 'into', 'like',
+  'this', 'that', 'these', 'those', 'it', 'its', 'im', 'i', 'you', 'your', 'he', 'she',
+  'they', 'we', 'us', 'me', 'my', 'his', 'her', 'their', 'our', 'so', 'if', 'not', 'no',
+  'just', 'oh', 'do', 'does', 'did', 'have', 'has', 'had', 'can', 'cant', 'dont', 'wont',
+  'what', 'when', 'why', 'how', 'who', 'all', 'up', 'out', 'get', 'got', 'here', 'there',
+  'still', 'now', 'gonna', 'wanna', 'am', 'will', 'would', 'could', 'should', 'than', 'then',
+  'too', 'very', 'really', 'even', 'also', 'more', 'some', 'one', 'because', 'yeah',
+]);
+
+function tokenizeReplyText(text) {
+  return (text || '')
+    .toLowerCase()
+    .match(/[a-z']+/g) || [];
+}
+
+function findReplyWordFrequencies(posts, limit = 40) {
+  const countsByWord = {};
+  posts.forEach(post => {
+    (post.replies || []).forEach(reply => {
+      tokenizeReplyText(reply.reply_text).forEach(word => {
+        const cleanWord = word.replace(/^'+|'+$/g, '');
+        if (cleanWord.length < 3 || REPLY_TEXT_STOPWORDS.has(cleanWord)) return;
+        countsByWord[cleanWord] = (countsByWord[cleanWord] || 0) + 1;
+      });
+    });
+  });
+
+  return Object.entries(countsByWord)
+    .map(([word, count]) => ({ word, count }))
+    .filter(entry => entry.count > 1)
+    .sort((a, b) => b.count - a.count)
     .slice(0, limit);
 }
 
@@ -125,9 +203,12 @@ export function calculateDaysSinceLastPost(latestPostDate, now = new Date()) {
 export function buildDashboardStats(posts) {
   const postsByCalendarDate = countPostsByCalendarDate(posts);
   const dateRange = findPostDateRange(posts);
+  const commenterStatsByBlogName = buildCommenterStatsByBlogName(posts);
+  const topCommenters = findTopCommenters(commenterStatsByBlogName);
 
   return {
     totalPostCount: posts.length,
+    totalReplyCount: posts.reduce((sum, post) => sum + (post.replies ? post.replies.length : 0), 0),
     dateRange,
     daysSinceLastPost: calculateDaysSinceLastPost(dateRange.latest),
     postsByDayOfWeek: countPostsByDayOfWeek(posts),
@@ -137,7 +218,11 @@ export function buildDashboardStats(posts) {
     postCountsByCharacter: countPostsByCharacter(posts),
     topPostsByNoteCount: findTopPostsByNoteCount(posts),
     bottomPostsByNoteCount: findBottomPostsByNoteCount(posts),
-    topCommenters: findTopCommenters(posts),
+    topCommenters,
+    raceToComment: findRaceToComment(topCommenters),
+    replyLengthLeaderboard: findReplyLengthLeaderboard(topCommenters),
+    chaosLeaderboard: findChaosLeaderboard(topCommenters),
+    replyWordFrequencies: findReplyWordFrequencies(posts),
     longestPostingStreakInDays: calculateLongestPostingStreak(postsByCalendarDate),
   };
 }

@@ -53,16 +53,15 @@ function renderStatTiles(stats) {
   document.getElementById('footer-count').textContent = stats.totalPostCount;
 }
 
-function renderCommentersLeaderboard(topCommenters) {
-  const listElement = document.getElementById('commenters-leaderboard');
+const LEADERBOARD_MEDALS_BY_RANK = ['🥇', '🥈', '🥉'];
+
+function renderLeaderboard(elementId, commenters, { barWidthPercent, countLabel }) {
+  const listElement = document.getElementById(elementId);
   listElement.innerHTML = '';
 
-  const highestCommentCount = Math.max(...topCommenters.map(commenter => commenter.commentCount), 1);
-  const MEDALS_BY_RANK = ['🥇', '🥈', '🥉'];
-
-  topCommenters.forEach((commenter, index) => {
+  commenters.forEach((commenter, index) => {
     const rank = index + 1;
-    const medal = MEDALS_BY_RANK[index];
+    const medal = LEADERBOARD_MEDALS_BY_RANK[index];
 
     const itemElement = document.createElement('li');
     itemElement.className = 'leaderboard-item';
@@ -84,10 +83,9 @@ function renderCommentersLeaderboard(topCommenters) {
     const trackElement = document.createElement('span');
     trackElement.className = 'leaderboard-track';
 
-    const barWidthPercent = (commenter.commentCount / highestCommentCount) * 100;
     const barElement = document.createElement('span');
     barElement.className = medal ? `leaderboard-bar leaderboard-bar--rank${rank}` : 'leaderboard-bar';
-    barElement.style.width = `${barWidthPercent}%`;
+    barElement.style.width = `${barWidthPercent(commenter)}%`;
 
     const avatarElement = document.createElement('img');
     avatarElement.className = 'leaderboard-avatar';
@@ -98,12 +96,48 @@ function renderCommentersLeaderboard(topCommenters) {
 
     const countElement = document.createElement('span');
     countElement.className = 'leaderboard-count';
-    countElement.textContent = commenter.commentCount.toLocaleString();
+    countElement.textContent = countLabel(commenter);
 
     trackElement.appendChild(barElement);
     linkElement.append(rankElement, nameElement, trackElement, countElement);
     itemElement.appendChild(linkElement);
     listElement.appendChild(itemElement);
+  });
+}
+
+function renderCommentersLeaderboard(topCommenters) {
+  const highestCommentCount = Math.max(...topCommenters.map(commenter => commenter.commentCount), 1);
+  renderLeaderboard('commenters-leaderboard', topCommenters, {
+    barWidthPercent: commenter => (commenter.commentCount / highestCommentCount) * 100,
+    countLabel: commenter => commenter.commentCount.toLocaleString(),
+  });
+}
+
+function formatResponseMinutes(minutes) {
+  return minutes < 60 ? `${Math.round(minutes)} min` : `${(minutes / 60).toFixed(1)} hr`;
+}
+
+function renderRaceToCommentLeaderboard(raceToComment) {
+  const slowestMinutes = Math.max(...raceToComment.map(commenter => commenter.averageResponseMinutes), 1);
+  renderLeaderboard('race-to-comment-leaderboard', raceToComment, {
+    barWidthPercent: commenter => 100 - (commenter.averageResponseMinutes / slowestMinutes) * 100,
+    countLabel: commenter => formatResponseMinutes(commenter.averageResponseMinutes),
+  });
+}
+
+function renderReplyLengthLeaderboard(replyLengthLeaderboard) {
+  const highestWordCount = Math.max(...replyLengthLeaderboard.map(commenter => commenter.averageWordCount), 1);
+  renderLeaderboard('reply-length-leaderboard', replyLengthLeaderboard, {
+    barWidthPercent: commenter => (commenter.averageWordCount / highestWordCount) * 100,
+    countLabel: commenter => `${commenter.averageWordCount.toFixed(1)}w`,
+  });
+}
+
+function renderChaosLeaderboard(chaosLeaderboard) {
+  const highestChaosScore = Math.max(...chaosLeaderboard.map(commenter => commenter.averageChaosScore), 1);
+  renderLeaderboard('chaos-leaderboard', chaosLeaderboard, {
+    barWidthPercent: commenter => (commenter.averageChaosScore / highestChaosScore) * 100,
+    countLabel: commenter => commenter.averageChaosScore.toFixed(1),
   });
 }
 
@@ -185,10 +219,46 @@ function renderPostingCalendar(postsByCalendarDate, dateRange) {
   });
 }
 
+const WORD_CLOUD_SERIES_COLOR_VARS = [
+  '--series-blue', '--series-aqua', '--series-orange',
+  '--series-violet', '--series-magenta', '--series-yellow',
+];
+const WORD_CLOUD_MIN_FONT_SIZE = 13;
+const WORD_CLOUD_MAX_FONT_SIZE = 38;
+
+function renderWordCloud(replyWordFrequencies, totalReplyCount) {
+  document.getElementById('word-cloud-reply-count').textContent = totalReplyCount.toLocaleString();
+
+  const containerElement = document.getElementById('reply-word-cloud');
+  containerElement.innerHTML = '';
+  if (!replyWordFrequencies.length) return;
+
+  const counts = replyWordFrequencies.map(entry => entry.count);
+  const minCount = Math.min(...counts);
+  const maxCount = Math.max(...counts);
+
+  replyWordFrequencies.forEach((entry, index) => {
+    const sizeRatio = maxCount === minCount ? 1 : (entry.count - minCount) / (maxCount - minCount);
+    const fontSize = WORD_CLOUD_MIN_FONT_SIZE + sizeRatio * (WORD_CLOUD_MAX_FONT_SIZE - WORD_CLOUD_MIN_FONT_SIZE);
+
+    const wordElement = document.createElement('span');
+    wordElement.className = 'word-cloud-word';
+    wordElement.style.fontSize = `${fontSize.toFixed(1)}px`;
+    wordElement.style.color = `var(${WORD_CLOUD_SERIES_COLOR_VARS[index % WORD_CLOUD_SERIES_COLOR_VARS.length]})`;
+    wordElement.textContent = entry.word;
+    wordElement.title = `${entry.word}: used ${entry.count} times`;
+    containerElement.appendChild(wordElement);
+  });
+}
+
 function renderDashboard(stats) {
   renderStatTiles(stats);
   renderDashboardCharts(stats);
   renderCommentersLeaderboard(stats.topCommenters);
+  renderRaceToCommentLeaderboard(stats.raceToComment);
+  renderReplyLengthLeaderboard(stats.replyLengthLeaderboard);
+  renderChaosLeaderboard(stats.chaosLeaderboard);
+  renderWordCloud(stats.replyWordFrequencies, stats.totalReplyCount);
   renderPostingCalendar(stats.postsByCalendarDate, stats.dateRange);
 }
 

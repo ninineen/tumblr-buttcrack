@@ -263,6 +263,20 @@ main { display: flex; flex-direction: column; gap: 20px; }
   color: var(--text-muted);
 }
 
+.word-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  padding: 4px 0;
+}
+
+.word-cloud-word {
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .leaderboard-list {
   list-style: none;
   margin: 0;
@@ -347,7 +361,7 @@ main { display: flex; flex-direction: column; gap: 20px; }
 }
 
 .leaderboard-count {
-  width: 32px;
+  width: 44px;
   flex: none;
   font-size: 13px;
   color: var(--text-muted);
